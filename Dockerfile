@@ -1,9 +1,9 @@
 #############################
 #     设置公共的变量         #
 #############################
-FROM --platform=$BUILDPLATFORM ubuntu:jammy AS builder
+FROM --platform=$BUILDPLATFORM ubuntu:resolute AS builder
 # 作者描述信息
-LABEL maintainer="danxiaonuo"
+LABEL maintainer="iflyelf"
 # 时区设置
 ARG TZ=Asia/Shanghai
 ENV TZ=$TZ
@@ -16,7 +16,7 @@ ARG DEBIAN_FRONTEND=noninteractive
 ENV DEBIAN_FRONTEND=$DEBIAN_FRONTEND
 
 # GO环境变量
-ARG GO_VERSION=1.26.2
+ARG GO_VERSION=1.27.0
 ENV GO_VERSION=$GO_VERSION
 ARG GOROOT=/opt/go
 ENV GOROOT=$GOROOT
@@ -40,7 +40,7 @@ ARG DOWNLOAD_SRC=/tmp/src
 ENV DOWNLOAD_SRC=$DOWNLOAD_SRC
 
 # SINGBOX版本
-ARG SINGBOX_VERSION=v1.13.11
+ARG SINGBOX_VERSION=v1.13.19
 ENV SINGBOX_VERSION=$SINGBOX_VERSION
 
 # 安装依赖包
@@ -49,7 +49,7 @@ ARG PKG_DEPS="\
     bash \
     bash-doc \
     bash-completion \
-    dnsutils \
+    bind9-dnsutils \
     iproute2 \
     net-tools \
     fping \
@@ -74,7 +74,7 @@ ARG PKG_DEPS="\
     iputils-ping \
     telnet \
     procps \
-    libaio1 \
+    libaio1t64 \
     numactl \
     xz-utils \
     gnupg2 \
@@ -92,16 +92,16 @@ ENV PKG_DEPS=$PKG_DEPS
 RUN --mount=type=cache,target=/var/lib/apt/,sharing=locked \
    set -eux && \
    # 更新源地址
-   sed -i s@http://*.*ubuntu.com@https://mirrors.aliyun.com@g /etc/apt/sources.list && \
-   sed -i 's?# deb-src?deb-src?g' /etc/apt/sources.list && \
+   sed -i 's@URIs: http://[a-z.]*\.ubuntu\.com/ubuntu/@URIs: https://mirrors.aliyun.com/ubuntu/@g' /etc/apt/sources.list.d/ubuntu.sources && \
+   sed -i 's@^Types: deb$@Types: deb deb-src@' /etc/apt/sources.list.d/ubuntu.sources && \
    # 解决证书认证失败问题
    touch /etc/apt/apt.conf.d/99verify-peer.conf && echo >>/etc/apt/apt.conf.d/99verify-peer.conf "Acquire { https::Verify-Peer false }" && \
    # 更新系统软件
-   DEBIAN_FRONTEND=noninteractive apt-get update -qqy && apt-get upgrade -qqy && \
+   DEBIAN_FRONTEND=noninteractive apt update -qqy && apt upgrade -qqy && \
    # 安装依赖包
-   DEBIAN_FRONTEND=noninteractive apt-get install -qqy --no-install-recommends $PKG_DEPS --option=Dpkg::Options::=--force-confdef && \
-   DEBIAN_FRONTEND=noninteractive apt-get -qqy --no-install-recommends autoremove --purge && \
-   DEBIAN_FRONTEND=noninteractive apt-get -qqy --no-install-recommends autoclean && \
+   DEBIAN_FRONTEND=noninteractive apt install -qqy --no-install-recommends $PKG_DEPS --option=Dpkg::Options::=--force-confdef && \
+   DEBIAN_FRONTEND=noninteractive apt -qqy --no-install-recommends autoremove --purge && \
+   DEBIAN_FRONTEND=noninteractive apt -qqy --no-install-recommends autoclean && \
    rm -rf /var/lib/apt/lists/* && \
    # 更新时区
    ln -sf /usr/share/zoneinfo/${TZ} /etc/localtime && \
@@ -146,10 +146,10 @@ RUN --mount=type=cache,target=/root/.cache/go-build \
 ##########################################
 #
 
-FROM ubuntu:jammy
+FROM ubuntu:resolute
 
 # 作者描述信息
-LABEL maintainer="danxiaonuo"
+LABEL maintainer="iflyelf"
 # 时区设置
 ARG TZ=Asia/Shanghai
 ENV TZ=$TZ
@@ -167,7 +167,7 @@ ARG PKG_DEPS="\
     bash \
     bash-doc \
     bash-completion \
-    dnsutils \
+    bind9-dnsutils \
     iproute2 \
     net-tools \
     fping \
@@ -192,7 +192,7 @@ ARG PKG_DEPS="\
     iputils-ping \
     telnet \
     procps \
-    libaio1 \
+    libaio1t64 \
     numactl \
     xz-utils \
     gnupg2 \
@@ -216,16 +216,16 @@ ENV PKG_DEPS=$PKG_DEPS
 RUN --mount=type=cache,target=/var/lib/apt/,sharing=locked \
    set -eux && \
    # 更新源地址
-   sed -i s@http://*.*ubuntu.com@https://mirrors.aliyun.com@g /etc/apt/sources.list && \
-   sed -i 's?# deb-src?deb-src?g' /etc/apt/sources.list && \
+   sed -i 's@URIs: http://[a-z.]*\.ubuntu\.com/ubuntu/@URIs: https://mirrors.aliyun.com/ubuntu/@g' /etc/apt/sources.list.d/ubuntu.sources && \
+   sed -i 's@^Types: deb$@Types: deb deb-src@' /etc/apt/sources.list.d/ubuntu.sources && \
    # 解决证书认证失败问题
    touch /etc/apt/apt.conf.d/99verify-peer.conf && echo >>/etc/apt/apt.conf.d/99verify-peer.conf "Acquire { https::Verify-Peer false }" && \
    # 更新系统软件
-   DEBIAN_FRONTEND=noninteractive apt-get update -qqy && apt-get upgrade -qqy && \
+   DEBIAN_FRONTEND=noninteractive apt update -qqy && apt upgrade -qqy && \
    # 安装依赖包
-   DEBIAN_FRONTEND=noninteractive apt-get install -qqy --no-install-recommends $PKG_DEPS --option=Dpkg::Options::=--force-confdef && \
-   DEBIAN_FRONTEND=noninteractive apt-get -qqy --no-install-recommends autoremove --purge && \
-   DEBIAN_FRONTEND=noninteractive apt-get -qqy --no-install-recommends autoclean && \
+   DEBIAN_FRONTEND=noninteractive apt install -qqy --no-install-recommends $PKG_DEPS --option=Dpkg::Options::=--force-confdef && \
+   DEBIAN_FRONTEND=noninteractive apt -qqy --no-install-recommends autoremove --purge && \
+   DEBIAN_FRONTEND=noninteractive apt -qqy --no-install-recommends autoclean && \
    rm -rf /var/lib/apt/lists/* && \
    # 更新时区
    ln -sf /usr/share/zoneinfo/${TZ} /etc/localtime && \
@@ -234,9 +234,9 @@ RUN --mount=type=cache,target=/var/lib/apt/,sharing=locked \
    # 更改为zsh
    sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" || true && \
    sed -i -e "s/bin\/ash/bin\/zsh/" /etc/passwd && \
-   sed -i -e 's/mouse=/mouse-=/g' /usr/share/vim/vim*/defaults.vim && \
-   locale-gen zh_CN.UTF-8 && localedef -f UTF-8 -i zh_CN zh_CN.UTF-8 && locale-gen && \
-   /bin/zsh
+   # vim 默认配置文件存在时才关闭 mouse(不同版本路径不同, 用 find 定位)
+   find /usr/share/vim -name defaults.vim -exec sed -i -e 's/mouse=/mouse-=/g' {} + && \
+   locale-gen zh_CN.UTF-8 && localedef -f UTF-8 -i zh_CN zh_CN.UTF-8 && locale-gen
 
 # 拷贝sing-box
 COPY --from=builder /go/bin/sing-box /usr/bin/sing-box
