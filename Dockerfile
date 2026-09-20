@@ -46,7 +46,9 @@ RUN --mount=type=cache,target=/root/.cache/go-build \
    cd /src && \
    # 读取 sing-box go.mod 声明的 Go 版本, 精确锁定工具链(避免过高 Go 破坏兼容)
    GOVER=$(grep -oP '^go \K[0-9]+\.[0-9]+(\.[0-9]+)?' go.mod | head -1) && \
-   export GOTOOLCHAIN=go${GOVER} && \
+   # 规范化为合法工具链名: go.mod 的 major.minor(如 1.26) 需补 .0 才是有效工具链版本
+   case "$GOVER" in *.*.*) GOTOOLCHAIN=go${GOVER} ;; *.*) GOTOOLCHAIN=go${GOVER}.0 ;; esac && \
+   export GOTOOLCHAIN && \
    echo "sing-box 要求 Go ${GOVER}, 锁定 GOTOOLCHAIN=${GOTOOLCHAIN}" && \
    go version && \
    export COMMIT=$(git rev-parse --short HEAD) && \
