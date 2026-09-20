@@ -34,12 +34,21 @@ ENV SINGBOX_VERSION=$SINGBOX_VERSION
 
 # ***** 克隆源码并交叉编译静态二进制 *****
 # iflyelf/ubuntu:latest 已含 go 与 git, 无需再装依赖或安装 Go。
+# 注意: 基础镜像 Go 版本可能高于 sing-box 要求(如 Go 1.27), 而 sing-box 依赖的
+# go-json-experiment 在过高 Go 版本下会报 "undefined: json.SkipFunc" 等编译错误。
+# 因 GOTOOLCHAIN=auto 只会向上满足 go.mod(不会降级), 故从 go.mod 读取其声明的
+# Go 版本并用 GOTOOLCHAIN 精确锁定, 让 go 自动拉取匹配的工具链, 保证兼容。
 RUN --mount=type=cache,target=/root/.cache/go-build \
    --mount=type=cache,target=/opt/golang/pkg/mod \
    set -eux && \
    go version && \
    git clone -b $SINGBOX_VERSION --depth 1 --progress https://github.com/SagerNet/sing-box.git /src && \
    cd /src && \
+   # 读取 sing-box go.mod 声明的 Go 版本, 精确锁定工具链(避免过高 Go 破坏兼容)
+   GOVER=$(grep -oP '^go \K[0-9]+\.[0-9]+(\.[0-9]+)?' go.mod | head -1) && \
+   export GOTOOLCHAIN=go${GOVER} && \
+   echo "sing-box 要求 Go ${GOVER}, 锁定 GOTOOLCHAIN=${GOTOOLCHAIN}" && \
+   go version && \
    export COMMIT=$(git rev-parse --short HEAD) && \
    export VERSION=$(go run ./cmd/internal/read_tag) && \
    go env -w GO111MODULE=on && \
