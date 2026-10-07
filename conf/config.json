@@ -22,10 +22,7 @@
       "type": "mixed",
       "tag": "mixed-in",
       "listen": "::",
-      "listen_port": 7890,
-      "sniff": true,
-      "sniff_override_destination": false,
-      "domain_strategy": "prefer_ipv4"
+      "listen_port": 7890
     },
     {
       "type": "socks",
@@ -37,9 +34,7 @@
       "type": "tproxy",
       "tag": "tproxy-in",
       "listen": "::",
-      "listen_port": 7893,
-      "sniff": true,
-      "sniff_override_destination": false
+      "listen_port": 7893
     }
   ],
   "outbounds": [
@@ -707,7 +702,9 @@
     {
       "type": "urltest",
       "tag": "🎉 xiaonuo🛺",
-      "outbounds": [],
+      "outbounds": [
+        "🎯 全球直连"
+      ],
       "url": "https://www.gstatic.com/generate_204",
       "interval": "30s",
       "tolerance": 10
@@ -715,18 +712,8 @@
     {
       "type": "urltest",
       "tag": "🇹🇼 台湾🛺",
-      "outbounds": [],
-      "filter": [
-        {
-          "action": "include",
-          "keywords": [
-            "台",
-            "tw",
-            "taiwan",
-            "TW",
-            "Taiwan"
-          ]
-        }
+      "outbounds": [
+        "🎯 全球直连"
       ],
       "url": "https://www.gstatic.com/generate_204",
       "interval": "30s",
@@ -735,19 +722,8 @@
     {
       "type": "urltest",
       "tag": "🇭🇰 香港🛺",
-      "outbounds": [],
-      "filter": [
-        {
-          "action": "include",
-          "keywords": [
-            "港",
-            "hk",
-            "hongkong",
-            "hong kong",
-            "HK",
-            "HongKong"
-          ]
-        }
+      "outbounds": [
+        "🎯 全球直连"
       ],
       "url": "https://www.gstatic.com/generate_204",
       "interval": "30s",
@@ -756,18 +732,8 @@
     {
       "type": "urltest",
       "tag": "🇯🇵 日本🛺",
-      "outbounds": [],
-      "filter": [
-        {
-          "action": "include",
-          "keywords": [
-            "日",
-            "jp",
-            "japan",
-            "JP",
-            "Japan"
-          ]
-        }
+      "outbounds": [
+        "🎯 全球直连"
       ],
       "url": "https://www.gstatic.com/generate_204",
       "interval": "30s",
@@ -776,18 +742,8 @@
     {
       "type": "urltest",
       "tag": "🇸🇬 新加坡🛺",
-      "outbounds": [],
-      "filter": [
-        {
-          "action": "include",
-          "keywords": [
-            "新",
-            "sg",
-            "singapore",
-            "SG",
-            "Singapore"
-          ]
-        }
+      "outbounds": [
+        "🎯 全球直连"
       ],
       "url": "https://www.gstatic.com/generate_204",
       "interval": "30s",
@@ -796,17 +752,8 @@
     {
       "type": "urltest",
       "tag": "🇰🇷 韩国🛺",
-      "outbounds": [],
-      "filter": [
-        {
-          "action": "include",
-          "keywords": [
-            "韩",
-            "🇰🇷",
-            "KR",
-            "Korea"
-          ]
-        }
+      "outbounds": [
+        "🎯 全球直连"
       ],
       "url": "https://www.gstatic.com/generate_204",
       "interval": "30s",
@@ -815,17 +762,8 @@
     {
       "type": "urltest",
       "tag": "🇷🇺 俄罗斯🛺",
-      "outbounds": [],
-      "filter": [
-        {
-          "action": "include",
-          "keywords": [
-            "🇷🇺",
-            "RU",
-            "俄罗斯",
-            "Russia"
-          ]
-        }
+      "outbounds": [
+        "🎯 全球直连"
       ],
       "url": "https://www.gstatic.com/generate_204",
       "interval": "30s",
@@ -834,17 +772,8 @@
     {
       "type": "urltest",
       "tag": "🇨🇦 加拿大🛺",
-      "outbounds": [],
-      "filter": [
-        {
-          "action": "include",
-          "keywords": [
-            "🇨🇦",
-            "CA",
-            "加拿大",
-            "Canada"
-          ]
-        }
+      "outbounds": [
+        "🎯 全球直连"
       ],
       "url": "https://www.gstatic.com/generate_204",
       "interval": "30s",
@@ -853,19 +782,8 @@
     {
       "type": "urltest",
       "tag": "🇺🇸 美国🛺",
-      "outbounds": [],
-      "filter": [
-        {
-          "action": "include",
-          "keywords": [
-            "美",
-            "us",
-            "unitedstates",
-            "united states",
-            "US",
-            "USA"
-          ]
-        }
+      "outbounds": [
+        "🎯 全球直连"
       ],
       "url": "https://www.gstatic.com/generate_204",
       "interval": "30s",
@@ -874,18 +792,8 @@
     {
       "type": "urltest",
       "tag": "🇬🇧 英国🛺",
-      "outbounds": [],
-      "filter": [
-        {
-          "action": "include",
-          "keywords": [
-            "🇬🇧",
-            "GB",
-            "英国",
-            "UK",
-            "Britain"
-          ]
-        }
+      "outbounds": [
+        "🎯 全球直连"
       ],
       "url": "https://www.gstatic.com/generate_204",
       "interval": "30s",
@@ -894,17 +802,8 @@
     {
       "type": "urltest",
       "tag": "🇫🇷 法国🛺",
-      "outbounds": [],
-      "filter": [
-        {
-          "action": "include",
-          "keywords": [
-            "🇫🇷",
-            "FR",
-            "法国",
-            "France"
-          ]
-        }
+      "outbounds": [
+        "🎯 全球直连"
       ],
       "url": "https://www.gstatic.com/generate_204",
       "interval": "30s",
@@ -913,17 +812,8 @@
     {
       "type": "urltest",
       "tag": "🇩🇪 德国🛺",
-      "outbounds": [],
-      "filter": [
-        {
-          "action": "include",
-          "keywords": [
-            "🇩🇪",
-            "DE",
-            "德国",
-            "Germany"
-          ]
-        }
+      "outbounds": [
+        "🎯 全球直连"
       ],
       "url": "https://www.gstatic.com/generate_204",
       "interval": "30s",
@@ -932,17 +822,8 @@
     {
       "type": "urltest",
       "tag": "🇧🇷 巴西🛺",
-      "outbounds": [],
-      "filter": [
-        {
-          "action": "include",
-          "keywords": [
-            "🇧🇷",
-            "BR",
-            "巴西",
-            "Brazil"
-          ]
-        }
+      "outbounds": [
+        "🎯 全球直连"
       ],
       "url": "https://www.gstatic.com/generate_204",
       "interval": "30s",
@@ -951,17 +832,8 @@
     {
       "type": "urltest",
       "tag": "🇳🇱 荷兰🛺",
-      "outbounds": [],
-      "filter": [
-        {
-          "action": "include",
-          "keywords": [
-            "🇳🇱",
-            "NL",
-            "荷兰",
-            "Netherlands"
-          ]
-        }
+      "outbounds": [
+        "🎯 全球直连"
       ],
       "url": "https://www.gstatic.com/generate_204",
       "interval": "30s",
@@ -970,314 +842,120 @@
     {
       "type": "selector",
       "tag": "🎉 xiaonuo",
-      "outbounds": []
+      "outbounds": [
+        "🎯 全球直连"
+      ]
     },
     {
       "type": "selector",
       "tag": "🇹🇼 台湾",
-      "outbounds": [],
-      "filter": [
-        {
-          "action": "include",
-          "keywords": [
-            "台",
-            "tw",
-            "taiwan",
-            "TW",
-            "Taiwan"
-          ]
-        }
+      "outbounds": [
+        "🎯 全球直连"
       ]
     },
     {
       "type": "selector",
       "tag": "🇭🇰 香港",
-      "outbounds": [],
-      "filter": [
-        {
-          "action": "include",
-          "keywords": [
-            "港",
-            "hk",
-            "hongkong",
-            "hong kong",
-            "HK",
-            "HongKong"
-          ]
-        }
+      "outbounds": [
+        "🎯 全球直连"
       ]
     },
     {
       "type": "selector",
       "tag": "🇯🇵 日本",
-      "outbounds": [],
-      "filter": [
-        {
-          "action": "include",
-          "keywords": [
-            "日",
-            "jp",
-            "japan",
-            "JP",
-            "Japan"
-          ]
-        }
+      "outbounds": [
+        "🎯 全球直连"
       ]
     },
     {
       "type": "selector",
       "tag": "🇸🇬 新加坡",
-      "outbounds": [],
-      "filter": [
-        {
-          "action": "include",
-          "keywords": [
-            "新",
-            "sg",
-            "singapore",
-            "SG",
-            "Singapore"
-          ]
-        }
+      "outbounds": [
+        "🎯 全球直连"
       ]
     },
     {
       "type": "selector",
       "tag": "🇰🇷 韩国",
-      "outbounds": [],
-      "filter": [
-        {
-          "action": "include",
-          "keywords": [
-            "韩",
-            "🇰🇷",
-            "KR",
-            "Korea"
-          ]
-        }
+      "outbounds": [
+        "🎯 全球直连"
       ]
     },
     {
       "type": "selector",
       "tag": "🇷🇺 俄罗斯",
-      "outbounds": [],
-      "filter": [
-        {
-          "action": "include",
-          "keywords": [
-            "🇷🇺",
-            "RU",
-            "俄罗斯",
-            "Russia"
-          ]
-        }
+      "outbounds": [
+        "🎯 全球直连"
       ]
     },
     {
       "type": "selector",
       "tag": "🇨🇦 加拿大",
-      "outbounds": [],
-      "filter": [
-        {
-          "action": "include",
-          "keywords": [
-            "🇨🇦",
-            "CA",
-            "加拿大",
-            "Canada"
-          ]
-        }
+      "outbounds": [
+        "🎯 全球直连"
       ]
     },
     {
       "type": "selector",
       "tag": "🇺🇸 美国",
-      "outbounds": [],
-      "filter": [
-        {
-          "action": "include",
-          "keywords": [
-            "美",
-            "us",
-            "unitedstates",
-            "united states",
-            "US",
-            "USA"
-          ]
-        }
+      "outbounds": [
+        "🎯 全球直连"
       ]
     },
     {
       "type": "selector",
       "tag": "🇬🇧 英国",
-      "outbounds": [],
-      "filter": [
-        {
-          "action": "include",
-          "keywords": [
-            "🇬🇧",
-            "GB",
-            "英国",
-            "UK",
-            "Britain"
-          ]
-        }
+      "outbounds": [
+        "🎯 全球直连"
       ]
     },
     {
       "type": "selector",
       "tag": "🇫🇷 法国",
-      "outbounds": [],
-      "filter": [
-        {
-          "action": "include",
-          "keywords": [
-            "🇫🇷",
-            "FR",
-            "法国",
-            "France"
-          ]
-        }
+      "outbounds": [
+        "🎯 全球直连"
       ]
     },
     {
       "type": "selector",
       "tag": "🇩🇪 德国",
-      "outbounds": [],
-      "filter": [
-        {
-          "action": "include",
-          "keywords": [
-            "🇩🇪",
-            "DE",
-            "德国",
-            "Germany"
-          ]
-        }
+      "outbounds": [
+        "🎯 全球直连"
       ]
     },
     {
       "type": "selector",
       "tag": "🇧🇷 巴西",
-      "outbounds": [],
-      "filter": [
-        {
-          "action": "include",
-          "keywords": [
-            "🇧🇷",
-            "BR",
-            "巴西",
-            "Brazil"
-          ]
-        }
+      "outbounds": [
+        "🎯 全球直连"
       ]
     },
     {
       "type": "selector",
       "tag": "🇳🇱 荷兰",
-      "outbounds": [],
-      "filter": [
-        {
-          "action": "include",
-          "keywords": [
-            "🇳🇱",
-            "NL",
-            "荷兰",
-            "Netherlands"
-          ]
-        }
+      "outbounds": [
+        "🎯 全球直连"
       ]
     },
     {
       "type": "selector",
       "tag": "🚞 其它地区",
-      "outbounds": [],
-      "filter": [
-        {
-          "action": "exclude",
-          "keywords": [
-            "🇭🇰",
-            "🇯🇵",
-            "🇺🇸",
-            "🇸🇬",
-            "🇨🇳",
-            "港",
-            "hk",
-            "hongkong",
-            "台",
-            "tw",
-            "taiwan",
-            "日",
-            "jp",
-            "japan",
-            "新",
-            "sg",
-            "singapore",
-            "美",
-            "us",
-            "unitedstates",
-            "韩",
-            "🇰🇷",
-            "KR",
-            "🇷🇺",
-            "RU",
-            "俄罗斯",
-            "🇨🇦",
-            "CA",
-            "加拿大",
-            "🇬🇧",
-            "GB",
-            "英国",
-            "🇫🇷",
-            "FR",
-            "法国",
-            "🇩🇪",
-            "DE",
-            "德国",
-            "🇧🇷",
-            "BR",
-            "巴西",
-            "🇳🇱",
-            "NL",
-            "荷兰",
-            "公司",
-            "直连",
-            "广告",
-            "拦截"
-          ]
-        }
+      "outbounds": [
+        "🎯 全球直连"
       ]
     },
     {
       "type": "selector",
       "tag": "🌐 全部节点",
-      "outbounds": [],
-      "filter": [
-        {
-          "action": "exclude",
-          "keywords": [
-            "公司",
-            "直连",
-            "广告",
-            "拦截"
-          ]
-        }
+      "outbounds": [
+        "🎯 全球直连"
       ]
     },
     {
       "type": "urltest",
       "tag": "♻️ 自动选择",
-      "outbounds": [],
-      "filter": [
-        {
-          "action": "exclude",
-          "keywords": [
-            "公司",
-            "直连",
-            "广告",
-            "拦截"
-          ]
-        }
+      "outbounds": [
+        "🎯 全球直连"
       ],
       "url": "https://www.gstatic.com/generate_204",
       "interval": "30s",
@@ -1286,17 +964,8 @@
     {
       "type": "urltest",
       "tag": "🔯 故障转移",
-      "outbounds": [],
-      "filter": [
-        {
-          "action": "exclude",
-          "keywords": [
-            "公司",
-            "直连",
-            "广告",
-            "拦截"
-          ]
-        }
+      "outbounds": [
+        "🎯 全球直连"
       ],
       "url": "https://www.gstatic.com/generate_204",
       "interval": "30s",
@@ -1305,17 +974,8 @@
     {
       "type": "urltest",
       "tag": "🔮 负载均衡-轮询",
-      "outbounds": [],
-      "filter": [
-        {
-          "action": "exclude",
-          "keywords": [
-            "公司",
-            "直连",
-            "广告",
-            "拦截"
-          ]
-        }
+      "outbounds": [
+        "🎯 全球直连"
       ],
       "url": "https://www.gstatic.com/generate_204",
       "interval": "30s",
@@ -1324,17 +984,8 @@
     {
       "type": "urltest",
       "tag": "🔮 负载均衡-散列",
-      "outbounds": [],
-      "filter": [
-        {
-          "action": "exclude",
-          "keywords": [
-            "公司",
-            "直连",
-            "广告",
-            "拦截"
-          ]
-        }
+      "outbounds": [
+        "🎯 全球直连"
       ],
       "url": "https://www.gstatic.com/generate_204",
       "interval": "30s",
@@ -1347,27 +998,10 @@
     {
       "type": "block",
       "tag": "🛑 广告拦截"
-    },
-    {
-      "type": "dns",
-      "tag": "dns-out"
     }
   ],
   "route": {
     "rules": [
-      {
-        "type": "logical",
-        "mode": "or",
-        "rules": [
-          {
-            "protocol": "dns"
-          },
-          {
-            "port": 53
-          }
-        ],
-        "outbound": "dns-out"
-      },
       {
         "ip_cidr": [
           "127.0.0.0/8",
