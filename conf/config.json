@@ -8,6 +8,12 @@
       "enabled": true,
       "path": "cache.db",
       "store_fakeip": false
+    },
+    "clash_api": {
+      "external_controller": ":9090",
+      "external_ui": "ui",
+      "secret": "@admin123",
+      "default_mode": "rule"
     }
   },
   "dns": {
