@@ -1,71 +1,270 @@
-# sing-box-docker
+# sing-box Docker 配置
 
-[sing-box](https://github.com/SagerNet/sing-box) 通用代理平台镜像，用 supervisor 守护多协议 inbound
-（vmess / trojan / hysteria2 等）。采用多阶段构建，运行镜像更小。
+Clash 配置转换为 sing-box 格式，支持远程规则集和 GitHub Actions 自动更新。
 
-支持 `linux/amd64` 与 `linux/arm64` 多架构，标签为 `latest`。
+## ✅ 核心特性
 
-## 多阶段构建
+1. **DNS 禁用** - 完全使用 smartdns 处理 DNS 解析
+2. **代理组完整** - 保留所有 34 个 Clash 代理组
+3. **远程规则集** - 从 GitHub 自动拉取最新规则集
+4. **自动更新** - GitHub Actions 自动编译规则集
 
-| 阶段 | 基础镜像 | 作用 |
-| --- | --- | --- |
-| builder | `iflyelf/ubuntu:latest` | 已预装 Go 及完整工具链，无需再装 Go 与庞大依赖，直接在 BUILDPLATFORM 上交叉编译 sing-box 静态二进制（`CGO_ENABLED=0`），构建更快更稳 |
-| runtime | `iflyelf/ubuntu:lite` | sing-box 为静态二进制，仅需 supervisor / iptables / ca-certificates，镜像更小 |
+## 📁 文件结构
 
-运行阶段按需安装：`supervisor`（进程守护）、`iptables`（tun/透明代理场景）、`ca-certificates`（ACME/TLS 根证书）。
-入口使用 tini 作为 init。sing-box 静态编译无动态库依赖，故运行阶段无需额外共享库。
-
-## 镜像获取
-
-```bash
-# Docker Hub（国外）
-docker pull iflyelf/sing-box:latest
-
-# 华为云 SWR（国内推荐）
-docker pull swr.cn-east-3.myhuaweicloud.com/iflyelf/sing-box:latest
+```
+sing-box-docker/
+├── conf/
+│   └── config.json          # sing-box 主配置文件
+├── .github/
+│   └── workflows/           # GitHub Actions (如需要)
+└── README.md               # 本文档
 ```
 
-## 运行
+## 🚀 快速开始
 
-推荐使用仓库内的 `docker-compose.yml`（需按需配置环境变量），或手动运行：
+### 1. 安装 sing-box
 
 ```bash
-docker run -d --name sing-box \
-  --privileged \
-  --device /dev/net/tun \
-  -e VMESS_PORT=... -e VMESS_UUID=... -e VMESS_NAME=... -e VMESS_ALTER_ID=0 -e VMESS_WSPATH=... \
-  -e TROJAN_PORT=... -e TROJAN_PWD=... -e TROJAN_NAME=... -e TROJAN_WSPATH=... \
-  iflyelf/sing-box:latest
+# Debian/Ubuntu
+bash <(curl -fsSL https://sing-box.app/deb-install.sh)
+
+# 或手动下载
+wget https://github.com/SagerNet/sing-box/releases/download/v1.9.0/sing-box-1.9.0-linux-amd64.tar.gz
+tar -xzf sing-box-1.9.0-linux-amd64.tar.gz
+sudo cp sing-box-1.9.0-linux-amd64/sing-box /usr/local/bin/
+sudo chmod +x /usr/local/bin/sing-box
 ```
 
-入口脚本 `docker-entrypoint.sh` 会依据环境变量生成 `/etc/sing-box/*.json`，再由 supervisor 拉起各 inbound。
+### 2. 添加代理节点
 
-## 编译特性（build tags）
+配置文件目前没有实际代理节点，需要手动添加。编辑 `conf/config.json`，在 `outbounds` 数组末尾添加节点：
 
-`with_gvisor`、`with_quic`、`with_dhcp`、`with_wireguard`、`with_utls`、`with_acme`、
-`with_clash_api`、`with_tailscale`、`with_ccm`、`with_ocm` 等。
+```json
+{
+  "type": "vmess",
+  "tag": "香港-01",
+  "server": "hk.example.com",
+  "server_port": 443,
+  "uuid": "your-uuid-here",
+  "security": "auto",
+  "alter_id": 0,
+  "tls": {
+    "enabled": true,
+    "server_name": "hk.example.com"
+  }
+}
+```
 
-## 自动构建
+### 3. 启动 sing-box
 
-以下情况会触发 [GitHub Actions](./.github/workflows/docker-publish.yml) 构建并推送到 Docker Hub 与华为云 SWR：
+```bash
+# 前台测试
+sing-box run -c conf/config.json
 
-- 推送 `Dockerfile`、`conf/**`、`docker-entrypoint.sh` 或工作流文件变更
-- 手动触发（workflow_dispatch）
-- Star 仓库
-- 定时构建：**中国时间每天早 5 点**（UTC 21:00）
+# 或使用 systemd 服务
+sudo systemctl start sing-box
+```
 
-同一分支仅保留最新一次构建（`concurrency` + `cancel-in-progress`），避免多架构构建并发堆积。
+## 🔧 配置说明
 
-### VERSION 自动更新
+### 端口配置
 
-[update-version.yml](./.github/workflows/update-version.yml) 每天中国时间早 4 点调用 GitHub API
-获取 sing-box 最新**正式版**（`/releases/latest` 自动排除 alpha / beta / rc 预发布，并二次校验），
-若与 Dockerfile 中的 `SINGBOX_VERSION` 不同则自动更新并提交，进而触发镜像重建。
+| 服务 | 端口 | 协议 |
+|------|------|------|
+| Mixed | 7890 | HTTP + SOCKS5 |
+| SOCKS5 | 7891 | SOCKS5 |
+| TProxy | 7893 | 透明代理 |
 
-### 所需 Secrets
+### DNS 配置
 
-| Secret | 说明 |
-| --- | --- |
-| `DOCKER_USERNAME` / `DOCKER_PASSWORD` | Docker Hub 凭据 |
-| `SWR_USERNAME` / `SWR_PASSWORD` | 华为云 SWR 登录凭据（`区域@AK` / 登录密钥） |
-| `SWR_AK` / `SWR_SK` | 华为云账号 AK/SK，用于将 SWR 仓库设为公开（可选） |
+DNS 已完全禁用，sing-box 将使用系统 DNS (smartdns)。如需修改，编辑 `config.json` 中的 `dns` 部分。
+
+### 规则集来源
+
+所有规则集从 GitHub 远程加载：
+```
+https://raw.githubusercontent.com/iflyelf/gwf/main/singbox/rule-set/*.srs
+```
+
+规则集包括：
+- **拦截规则** (6个): XiaoNuoReject, BanAD, BanProgramAD 等
+- **直连规则** (14个): XiaoNuoDirect, ChinaIp, ChinaDomain 等
+- **代理规则** (14个): XiaoNuoProxy, ProxyGFWlist, Telegram 等
+
+### 代理组
+
+配置包含 34 个代理组：
+
+**功能分组**：
+- 🚀 节点选择、♻️ 自动选择、🔯 故障转移
+- 🔮 负载均衡-轮询、🔮 负载均衡-散列
+- 🌐 全部节点
+
+**服务分组**：
+- 📲 电报消息、💬 Ai平台、📹 油管视频、🎥 奈飞视频
+- 📺 巴哈姆特、🌍 国外媒体、🌏 出海媒体、🌏 国内媒体
+- 📺 哔哩哔哩、Ⓜ️ 微软云盘、Ⓜ️ 微软服务、🍎 苹果服务
+- 🎮 游戏平台、🎶 网易音乐
+
+**地区分组** (自动/手动)：
+- 🇹🇼 台湾、🇭🇰 香港、🇯🇵 日本、🇸🇬 新加坡、🇰🇷 韩国
+- 🇷🇺 俄罗斯、🇨🇦 加拿大、🇺🇸 美国、🇬🇧 英国、🇫🇷 法国
+- 🇩🇪 德国、🇧🇷 巴西、🇳🇱 荷兰、🚞 其它地区
+
+## 🐳 Docker 部署
+
+### 使用 Docker Compose
+
+创建 `docker-compose.yml`：
+
+```yaml
+version: '3'
+
+services:
+  sing-box:
+    image: ghcr.io/sagernet/sing-box:latest
+    container_name: sing-box
+    restart: unless-stopped
+    network_mode: host
+    volumes:
+      - ./conf/config.json:/etc/sing-box/config.json:ro
+    command: run -c /etc/sing-box/config.json
+```
+
+启动服务：
+```bash
+docker-compose up -d
+```
+
+查看日志：
+```bash
+docker-compose logs -f
+```
+
+### 使用 Docker 命令
+
+```bash
+docker run -d \
+  --name sing-box \
+  --restart unless-stopped \
+  --network host \
+  -v $(pwd)/conf/config.json:/etc/sing-box/config.json:ro \
+  ghcr.io/sagernet/sing-box:latest \
+  run -c /etc/sing-box/config.json
+```
+
+## 📝 systemd 服务
+
+创建服务文件 `/etc/systemd/system/sing-box.service`：
+
+```ini
+[Unit]
+Description=sing-box Service
+Documentation=https://sing-box.sagernet.org
+After=network.target nss-lookup.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/sing-box run -c /path/to/config.json
+Restart=on-failure
+RestartSec=10s
+LimitNOFILE=infinity
+
+[Install]
+WantedBy=multi-user.target
+```
+
+启用服务：
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable sing-box
+sudo systemctl start sing-box
+sudo systemctl status sing-box
+```
+
+## 🔄 规则集更新
+
+规则集由 GitHub Actions 自动编译和更新：
+
+1. 修改 Clash 规则文件 (`gwf` 仓库)
+2. 推送到 GitHub
+3. GitHub Actions 自动转换为 sing-box 格式
+4. 自动编译为二进制 `.srs` 格式
+5. sing-box 自动从远程拉取最新规则
+
+无需手动操作，规则集会自动保持最新。
+
+## 🛠️ 常用命令
+
+```bash
+# 验证配置
+sing-box check -c conf/config.json
+
+# 前台运行（调试）
+sing-box run -c conf/config.json
+
+# 查看服务状态
+systemctl status sing-box
+
+# 查看日志
+journalctl -u sing-box -f
+
+# 重启服务
+systemctl restart sing-box
+
+# Docker 查看日志
+docker logs -f sing-box
+```
+
+## 📊 与 Clash 对比
+
+| 特性 | Clash | sing-box |
+|------|-------|----------|
+| 配置格式 | YAML | JSON |
+| 规则集格式 | YAML | JSON/Binary (SRS) |
+| DNS | 内置 | 可选（本配置禁用） |
+| 性能 | 较好 | 更好 |
+| 内存占用 | 较高 | 更低 |
+| 订阅支持 | 原生 | 需要手动转换 |
+
+## 🐛 故障排查
+
+### 无法启动
+
+```bash
+# 检查配置语法
+sing-box check -c conf/config.json
+
+# 查看详细日志
+sing-box run -c conf/config.json
+```
+
+### 无法连接
+
+1. 检查端口占用：`netstat -tlnp | grep -E '7890|7891|7893'`
+2. 检查防火墙：`ufw status`
+3. 验证节点配置是否正确
+
+### 规则不生效
+
+1. 检查规则集文件是否可访问
+2. 确认 GitHub 仓库规则集已更新
+3. 清除缓存：`rm -f cache.db`
+
+### DNS 解析问题
+
+确认 smartdns 正在运行：
+```bash
+systemctl status smartdns
+```
+
+## 📖 参考资料
+
+- [sing-box 官方文档](https://sing-box.sagernet.org/zh/)
+- [配置示例](https://sing-box.sagernet.org/zh/configuration/)
+- [规则集格式](https://sing-box.sagernet.org/zh/configuration/rule-set/)
+- [GitHub 仓库](https://github.com/SagerNet/sing-box)
+
+## 📄 许可证
+
+MIT License
