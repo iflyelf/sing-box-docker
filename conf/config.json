@@ -709,7 +709,10 @@
       "type": "urltest",
       "tag": "🎉 xiaonuo🛺",
       "outbounds": [
-        "🎯 全球直连"
+        "papa-vmess-1",
+        "papa-trojan-1",
+        "sg-vmess-1",
+        "sg-trojan-1"
       ],
       "url": "https://www.gstatic.com/generate_204",
       "interval": "30s",
@@ -849,7 +852,10 @@
       "type": "selector",
       "tag": "🎉 xiaonuo",
       "outbounds": [
-        "🎯 全球直连"
+        "papa-vmess-1",
+        "papa-trojan-1",
+        "sg-vmess-1",
+        "sg-trojan-1"
       ]
     },
     {
@@ -954,14 +960,20 @@
       "type": "selector",
       "tag": "🌐 全部节点",
       "outbounds": [
-        "🎯 全球直连"
+        "papa-vmess-1",
+        "papa-trojan-1",
+        "sg-vmess-1",
+        "sg-trojan-1"
       ]
     },
     {
       "type": "urltest",
       "tag": "♻️ 自动选择",
       "outbounds": [
-        "🎯 全球直连"
+        "papa-vmess-1",
+        "papa-trojan-1",
+        "sg-vmess-1",
+        "sg-trojan-1"
       ],
       "url": "https://www.gstatic.com/generate_204",
       "interval": "30s",
@@ -971,7 +983,10 @@
       "type": "urltest",
       "tag": "🔯 故障转移",
       "outbounds": [
-        "🎯 全球直连"
+        "papa-vmess-1",
+        "papa-trojan-1",
+        "sg-vmess-1",
+        "sg-trojan-1"
       ],
       "url": "https://www.gstatic.com/generate_204",
       "interval": "30s",
@@ -981,7 +996,10 @@
       "type": "urltest",
       "tag": "🔮 负载均衡-轮询",
       "outbounds": [
-        "🎯 全球直连"
+        "papa-vmess-1",
+        "papa-trojan-1",
+        "sg-vmess-1",
+        "sg-trojan-1"
       ],
       "url": "https://www.gstatic.com/generate_204",
       "interval": "30s",
@@ -991,7 +1009,10 @@
       "type": "urltest",
       "tag": "🔮 负载均衡-散列",
       "outbounds": [
-        "🎯 全球直连"
+        "papa-vmess-1",
+        "papa-trojan-1",
+        "sg-vmess-1",
+        "sg-trojan-1"
       ],
       "url": "https://www.gstatic.com/generate_204",
       "interval": "30s",
@@ -1004,6 +1025,72 @@
     {
       "type": "block",
       "tag": "🛑 广告拦截"
+    },
+    {
+      "tag": "papa-vmess-1",
+      "type": "vmess",
+      "server": "auto.xiaonuo.live",
+      "server_port": 443,
+      "uuid": "f011c012-5f1d-418c-9494-d24d77a9d8f9",
+      "security": "auto",
+      "alter_id": 0,
+      "tls": {
+        "enabled": true,
+        "server_name": "papa-tunnels.xiaonuo.live",
+        "insecure": true
+      },
+      "transport": {
+        "type": "ws",
+        "path": "/xiaonuo/vmess",
+        "headers": {
+          "Host": "papa-tunnels.xiaonuo.live"
+        }
+      }
+    },
+    {
+      "tag": "papa-trojan-1",
+      "type": "trojan",
+      "server": "auto.xiaonuo.live",
+      "server_port": 443,
+      "password": "ysyh!9Sky",
+      "tls": {
+        "enabled": true,
+        "server_name": "papa-tunnels.xiaonuo.live",
+        "insecure": true
+      }
+    },
+    {
+      "tag": "sg-vmess-1",
+      "type": "vmess",
+      "server": "auto.xiaonuo.live",
+      "server_port": 8443,
+      "uuid": "f011c012-5f1d-418c-9494-d24d77a9d8f9",
+      "security": "auto",
+      "alter_id": 0,
+      "tls": {
+        "enabled": true,
+        "server_name": "sg-tunnels.xiaonuo.live",
+        "insecure": true
+      },
+      "transport": {
+        "type": "ws",
+        "path": "/xiaonuo/vmess",
+        "headers": {
+          "Host": "sg-tunnels.xiaonuo.live"
+        }
+      }
+    },
+    {
+      "tag": "sg-trojan-1",
+      "type": "trojan",
+      "server": "auto.xiaonuo.live",
+      "server_port": 8443,
+      "password": "ysyh!9Sky",
+      "tls": {
+        "enabled": true,
+        "server_name": "sg-tunnels.xiaonuo.live",
+        "insecure": true
+      }
     }
   ],
   "route": {
