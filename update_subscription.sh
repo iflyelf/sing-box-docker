@@ -37,7 +37,7 @@ fi
 echo ""
 echo "正在更新订阅..."
 cd "${TOOLS_DIR}"
-python3 config_manager.py "${CONFIG_TEMPLATE}" "${CONFIG_OUTPUT}" once
+python3 scripts/config_manager.py "${CONFIG_TEMPLATE}" "${CONFIG_OUTPUT}" once
 
 if [ $? -eq 0 ]; then
     echo ""
