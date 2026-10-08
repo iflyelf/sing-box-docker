@@ -1,23 +1,30 @@
-# sing-box Docker 配置
+# sing-box Docker 配置和订阅管理
 
-Clash 配置转换为 sing-box 格式，支持远程规则集和 GitHub Actions 自动更新。
+Clash 配置转换为 sing-box 格式，支持远程规则集、订阅管理和 Clash API。
 
-## ✅ 核心特性
+## ✨ 特性
 
-1. **DNS 禁用** - 完全使用 smartdns 处理 DNS 解析
-2. **代理组完整** - 保留所有 34 个 Clash 代理组
-3. **远程规则集** - 从 GitHub 自动拉取最新规则集
-4. **自动更新** - GitHub Actions 自动编译规则集
+- ✅ **完全对齐 Clash**：所有功能与 Clash 保持一致
+- ✅ **DNS 禁用**：使用 smartdns 处理 DNS 解析
+- ✅ **远程规则集**：从 GitHub 自动拉取最新规则集（SRS 格式）
+- ✅ **订阅管理**：支持 Clash 订阅转换和自动更新
+- ✅ **Clash API**：兼容 Clash API，支持 Web 面板管理
+- ✅ **地区分组**：自动识别节点地区（13个地区）
 
-## 📁 文件结构
+## 📁 项目结构
 
 ```
 sing-box-docker/
 ├── conf/
-│   └── config.json          # sing-box 主配置文件
-├── .github/
-│   └── workflows/           # GitHub Actions (如需要)
-└── README.md               # 本文档
+│   ├── config.json               # 运行时配置
+│   └── config_with_sub.json      # 配置模板（含订阅）
+├── scripts/
+│   ├── subscription_converter.py # 订阅转换工具
+│   ├── config_manager.py         # 配置管理器
+│   └── auto_update_subscription.sh # 自动更新脚本
+├── update_subscription.sh        # 便捷更新脚本
+├── docker-compose.yml            # Docker Compose 配置
+└── README.md                     # 本文档
 ```
 
 ## 🚀 快速开始
@@ -31,41 +38,38 @@ bash <(curl -fsSL https://sing-box.app/deb-install.sh)
 # 方式 2: 手动下载最新版本
 LATEST_VERSION=$(curl -s https://api.github.com/repos/SagerNet/sing-box/releases/latest | grep -o '"tag_name": "v[^"]*"' | cut -d'"' -f4)
 VERSION_NUM=${LATEST_VERSION#v}
-wget "https://down.xiaonuo.live?url=https://github.com/SagerNet/sing-box/releases/download/${LATEST_VERSION}/sing-box-${VERSION_NUM}-linux-amd64.tar.gz" -O sing-box.tar.gz
-tar -xzf sing-box.tar.gz
+wget "https://github.com/SagerNet/sing-box/releases/download/${LATEST_VERSION}/sing-box-${VERSION_NUM}-linux-amd64.tar.gz"
+tar -xzf sing-box-${VERSION_NUM}-linux-amd64.tar.gz
 sudo cp sing-box-${VERSION_NUM}-linux-amd64/sing-box /usr/local/bin/
 sudo chmod +x /usr/local/bin/sing-box
 sing-box version
 ```
 
-### 2. 添加代理节点
-
-配置文件目前没有实际代理节点，需要手动添加。编辑 `conf/config.json`，在 `outbounds` 数组末尾添加节点：
-
-```json
-{
-  "type": "vmess",
-  "tag": "香港-01",
-  "server": "hk.example.com",
-  "server_port": 443,
-  "uuid": "your-uuid-here",
-  "security": "auto",
-  "alter_id": 0,
-  "tls": {
-    "enabled": true,
-    "server_name": "hk.example.com"
-  }
-}
-```
-
-### 3. 启动 sing-box
+### 2. 克隆配置
 
 ```bash
-# 前台测试
+git clone https://github.com/iflyelf/sing-box-docker.git
+cd sing-box-docker
+```
+
+### 3. 转换订阅
+
+```bash
+# 设置订阅地址
+export CLASH_SUBSCRIPTION_URL='你的订阅地址'
+
+# 运行更新脚本
+./update_subscription.sh
+```
+
+### 4. 启动服务
+
+```bash
+# 直接运行
 sing-box run -c conf/config.json
 
-# 或使用 systemd 服务
-sudo systemctl start sing-box
+# 或使用 systemd
+sudo systemctl start singbox
 ```
 
 ## 🔧 配置说明
@@ -77,53 +81,36 @@ sudo systemctl start sing-box
 | Mixed  | 7890 | HTTP + SOCKS5 |
 | SOCKS5 | 7891 | SOCKS5        |
 | TProxy | 7893 | 透明代理      |
+| API    | 9090 | Clash API     |
 
 ### DNS 配置
 
-DNS 已完全禁用，sing-box 将使用系统 DNS (smartdns)。如需修改，编辑 `config.json` 中的 `dns` 部分。
+DNS 已完全禁用，sing-box 将使用系统 DNS（smartdns）。
 
 ### 规则集来源
 
-所有规则集从 GitHub 远程加载：
+所有规则集从 [gwf](https://github.com/iflyelf/gwf) 仓库远程加载（SRS 二进制格式）：
 
 ```
 https://raw.githubusercontent.com/iflyelf/gwf/main/singbox/rule-set/*.srs
 ```
 
 规则集包括：
-
-- **拦截规则** (6个): XiaoNuoReject, BanAD, BanProgramAD 等
-- **直连规则** (14个): XiaoNuoDirect, ChinaIp, ChinaDomain 等
-- **代理规则** (14个): XiaoNuoProxy, ProxyGFWlist, Telegram 等
+- **拦截规则**（6个）：XiaoNuoReject, BanAD, BanProgramAD 等
+- **直连规则**（14个）：XiaoNuoDirect, ChinaIp, ChinaDomain 等
+- **代理规则**（14个）：XiaoNuoProxy, ProxyGFWlist, Telegram 等
 
 ### 代理组
 
-配置包含 34 个代理组：
+配置包含 53 个代理组，与 Clash 完全一致：
 
-**功能分组**：
-
-- 🚀 节点选择、♻️ 自动选择、🔯 故障转移
-- 🔮 负载均衡-轮询、🔮 负载均衡-散列
-- 🌐 全部节点
-
-**服务分组**：
-
-- 📲 电报消息、💬 Ai平台、📹 油管视频、🎥 奈飞视频
-- 📺 巴哈姆特、🌍 国外媒体、🌏 出海媒体、🌏 国内媒体
-- 📺 哔哩哔哩、Ⓜ️ 微软云盘、Ⓜ️ 微软服务、🍎 苹果服务
-- 🎮 游戏平台、🎶 网易音乐
-
-**地区分组** (自动/手动)：
-
-- 🇹🇼 台湾、🇭🇰 香港、🇯🇵 日本、🇸🇬 新加坡、🇰🇷 韩国
-- 🇷🇺 俄罗斯、🇨🇦 加拿大、🇺🇸 美国、🇬🇧 英国、🇫🇷 法国
-- 🇩🇪 德国、🇧🇷 巴西、🇳🇱 荷兰、🚞 其它地区
+- **功能分组**：节点选择、自动选择、故障转移、负载均衡
+- **服务分组**：Telegram、AI、YouTube、Netflix 等
+- **地区分组**：台湾、香港、日本、新加坡、美国等（自动/手动）
 
 ## 🐳 Docker 部署
 
 ### 使用 Docker Compose（推荐）
-
-创建 `docker-compose.yml`：
 
 ```yaml
 version: '3'
@@ -140,20 +127,10 @@ services:
     command: run -c /etc/sing-box/config.json
 ```
 
-> **镜像说明**：使用华为云 SWR 镜像仓库，国内访问速度更快
-> - 华为云镜像（推荐）：`swr.cn-east-3.myhuaweicloud.com/iflyelf/sing-box:latest`
-> - 官方镜像（国外）：`ghcr.io/sagernet/sing-box:latest`
-
 启动服务：
 
 ```bash
 docker-compose up -d
-```
-
-查看日志：
-
-```bash
-docker-compose logs -f
 ```
 
 ### 使用 Docker 命令
@@ -167,33 +144,174 @@ docker run -d \
   -v $(pwd)/conf/config.json:/etc/sing-box/config.json:ro \
   swr.cn-east-3.myhuaweicloud.com/iflyelf/sing-box:latest \
   run -c /etc/sing-box/config.json
-
-# 或使用官方镜像
-docker run -d \
-  --name sing-box \
-  --restart unless-stopped \
-  --network host \
-  -v $(pwd)/conf/config.json:/etc/sing-box/config.json:ro \
-  ghcr.io/sagernet/sing-box:latest \
-  run -c /etc/sing-box/config.json
 ```
 
-## 📝 systemd 服务
+## 📡 订阅管理
 
-创建服务文件 `/etc/systemd/system/sing-box.service`：
+### 订阅 URL 配置
+
+在 `conf/config_with_sub.json` 中配置订阅地址：
+
+```json
+{
+  "_subscription": {
+    "url": "env:CLASH_SUBSCRIPTION_URL",
+    "update_interval": 3600,
+    "auto_update": true
+  },
+  ...
+}
+```
+
+- `url`: 订阅地址，支持 `env:变量名` 或直接写 URL（不推荐）
+- `update_interval`: 更新间隔（秒）
+- `auto_update`: 是否自动更新
+
+### 更新订阅
+
+#### 方式 1：使用便捷脚本（推荐）
+
+```bash
+export CLASH_SUBSCRIPTION_URL='你的订阅地址'
+./update_subscription.sh
+```
+
+#### 方式 2：使用配置管理器
+
+```bash
+export CLASH_SUBSCRIPTION_URL='你的订阅地址'
+cd scripts
+python3 config_manager.py ../conf/config_with_sub.json ../conf/config.json once
+```
+
+#### 方式 3：使用订阅转换工具
+
+```bash
+export CLASH_SUBSCRIPTION_URL='你的订阅地址'
+cd scripts
+python3 subscription_converter.py ../conf/config.json output.json
+```
+
+### 自动更新
+
+#### 守护进程模式
+
+```bash
+cd scripts
+./auto_update_subscription.sh daemon
+```
+
+#### Crontab 定时任务
+
+```bash
+crontab -e
+
+# 添加：每小时更新一次
+0 * * * * export CLASH_SUBSCRIPTION_URL='你的订阅' && cd /path/to/sing-box-docker && ./update_subscription.sh >> /var/log/singbox-update.log 2>&1
+```
+
+## 🌐 Clash API
+
+### API 配置
+
+```json
+{
+  "experimental": {
+    "clash_api": {
+      "external_controller": ":9090",
+      "external_ui": "ui",
+      "secret": "@admin123",
+      "default_mode": "rule"
+    }
+  }
+}
+```
+
+### 访问信息
+
+- **API 地址**: `http://127.0.0.1:9090`
+- **Secret**: `@admin123`
+- **面板地址**: `http://127.0.0.1:9090/ui`
+
+### API 使用示例
+
+```bash
+# 获取配置信息
+curl -H "Authorization: Bearer @admin123" http://127.0.0.1:9090/configs
+
+# 获取代理信息
+curl -H "Authorization: Bearer @admin123" http://127.0.0.1:9090/proxies
+
+# 切换代理
+curl -X PUT \
+  -H "Authorization: Bearer @admin123" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"节点名称"}' \
+  http://127.0.0.1:9090/proxies/🚀%20节点选择
+
+# 测试延迟
+curl -H "Authorization: Bearer @admin123" \
+  "http://127.0.0.1:9090/proxies/节点名称/delay?timeout=5000&url=https://www.gstatic.com/generate_204"
+```
+
+### Web 面板
+
+推荐使用以下面板：
+
+1. **Yacd**
+   ```bash
+   git clone https://github.com/haishanh/yacd.git ui
+   ```
+
+2. **Clash Dashboard**
+   ```bash
+   git clone https://github.com/Dreamacro/clash-dashboard.git ui
+   ```
+
+3. **Yacd-meta**
+   ```bash
+   git clone https://github.com/MetaCubeX/Yacd-meta.git ui
+   ```
+
+访问：`http://127.0.0.1:9090/ui`
+
+## 🔄 节点地区自动分组
+
+订阅转换工具会自动识别节点地区并分配到对应组：
+
+| 地区组 | 匹配关键词 |
+|--------|-----------|
+| 🇹🇼 台湾 | 台, tw, taiwan, TW, Taiwan |
+| 🇭🇰 香港 | 港, hk, hongkong, HK, HongKong |
+| 🇯🇵 日本 | 日, jp, japan, JP, Japan |
+| 🇸🇬 新加坡 | 新, sg, singapore, SG, Singapore |
+| 🇰🇷 韩国 | 韩, 🇰🇷, KR, Korea |
+| 🇷🇺 俄罗斯 | 🇷🇺, RU, 俄罗斯, Russia |
+| 🇨🇦 加拿大 | 🇨🇦, CA, 加拿大, Canada |
+| 🇺🇸 美国 | 美, us, unitedstates, US, USA |
+| 🇬🇧 英国 | 🇬🇧, GB, 英国, UK, Britain |
+| 🇫🇷 法国 | 🇫🇷, FR, 法国, France |
+| 🇩🇪 德国 | 🇩🇪, DE, 德国, Germany |
+| 🇧🇷 巴西 | 🇧🇷, BR, 巴西, Brazil |
+| 🇳🇱 荷兰 | 🇳🇱, NL, 荷兰, Netherlands |
+
+不匹配任何地区的节点归入"🚞 其它地区"。
+
+## 🛠️ systemd 服务配置
+
+创建 `/etc/systemd/system/singbox.service`：
 
 ```ini
 [Unit]
 Description=sing-box Service
-Documentation=https://sing-box.sagernet.org
-After=network.target nss-lookup.target
+After=network.target
 
 [Service]
 Type=simple
+User=root
 ExecStart=/usr/local/bin/sing-box run -c /path/to/config.json
-Restart=on-failure
-RestartSec=10s
-LimitNOFILE=infinity
+Restart=always
+RestartSec=3
 
 [Install]
 WantedBy=multi-user.target
@@ -203,94 +321,62 @@ WantedBy=multi-user.target
 
 ```bash
 sudo systemctl daemon-reload
-sudo systemctl enable sing-box
-sudo systemctl start sing-box
-sudo systemctl status sing-box
+sudo systemctl enable singbox
+sudo systemctl start singbox
+sudo systemctl status singbox
 ```
 
-## 🔄 规则集更新
-
-规则集由 GitHub Actions 自动编译和更新：
-
-1. 修改 Clash 规则文件 (`gwf` 仓库)
-2. 推送到 GitHub
-3. GitHub Actions 自动转换为 sing-box 格式
-4. 自动编译为二进制 `.srs` 格式
-5. sing-box 自动从远程拉取最新规则
-
-无需手动操作，规则集会自动保持最新。
-
-## 🛠️ 常用命令
+## 🔍 常用命令
 
 ```bash
-# 验证配置
+# 检查配置
 sing-box check -c conf/config.json
 
-# 前台运行（调试）
+# 运行服务
 sing-box run -c conf/config.json
 
-# 查看服务状态
-systemctl status sing-box
+# 格式化配置
+sing-box format -c conf/config.json -w
+
+# 查看版本
+sing-box version
+
+# 更新订阅
+./update_subscription.sh
 
 # 查看日志
-journalctl -u sing-box -f
-
-# 重启服务
-systemctl restart sing-box
-
-# Docker 查看日志
-docker logs -f sing-box
+journalctl -u singbox -f
 ```
-
-## 📊 与 Clash 对比
-
-| 特性       | Clash | sing-box           |
-| ---------- | ----- | ------------------ |
-| 配置格式   | YAML  | JSON               |
-| 规则集格式 | YAML  | JSON/Binary (SRS)  |
-| DNS        | 内置  | 可选（本配置禁用） |
-| 性能       | 较好  | 更好               |
-| 内存占用   | 较高  | 更低               |
-| 订阅支持   | 原生  | 需要手动转换       |
 
 ## 🐛 故障排查
 
-### 无法启动
+### 订阅更新失败
 
-```bash
-# 检查配置语法
-sing-box check -c conf/config.json
+1. 检查订阅地址是否正确
+2. 检查网络连接
+3. 查看错误日志
 
-# 查看详细日志
-sing-box run -c conf/config.json
-```
+### 配置验证失败
 
-### 无法连接
+1. 运行 `sing-box check -c conf/config.json`
+2. 检查节点格式是否正确
+3. 确保使用运行时配置（非模板）
 
-1. 检查端口占用：`netstat -tlnp | grep -E '7890|7891|7893'`
-2. 检查防火墙：`ufw status`
-3. 验证节点配置是否正确
+### API 无法访问
 
-### 规则不生效
+1. 检查服务是否运行
+2. 检查端口是否被占用：`netstat -tlnp | grep 9090`
+3. 检查防火墙设置
 
-1. 检查规则集文件是否可访问
-2. 确认 GitHub 仓库规则集已更新
-3. 清除缓存：`rm -f cache.db`
+### 面板无法打开
 
-### DNS 解析问题
+1. 确认 `ui` 目录存在且包含面板文件
+2. 检查 `external_ui` 配置路径
+3. 确认 API 服务正常
 
-确认 smartdns 正在运行：
+## 📦 相关项目
 
-```bash
-systemctl status smartdns
-```
-
-## 📖 参考资料
-
-- [sing-box 官方文档](https://sing-box.sagernet.org/zh/)
-- [配置示例](https://sing-box.sagernet.org/zh/configuration/)
-- [规则集格式](https://sing-box.sagernet.org/zh/configuration/rule-set/)
-- [GitHub 仓库](https://github.com/SagerNet/sing-box)
+- [gwf](https://github.com/iflyelf/gwf) - Clash 规则集转换为 sing-box 格式
 
 ## 📄 许可证
 

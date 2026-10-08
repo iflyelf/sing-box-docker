@@ -1,11 +1,9 @@
 #!/bin/bash
 # sing-box 订阅更新便捷脚本
-# 位置: /xiaonuo/workspace/docker/sing-box-docker/update_subscription.sh
 
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-TOOLS_DIR="${SCRIPT_DIR}/../../tools/gwf"
 CONFIG_TEMPLATE="${SCRIPT_DIR}/conf/config_with_sub.json"
 CONFIG_OUTPUT="${SCRIPT_DIR}/conf/config.json"
 
@@ -36,8 +34,8 @@ fi
 # 更新配置
 echo ""
 echo "正在更新订阅..."
-cd "${TOOLS_DIR}"
-python3 scripts/config_manager.py "${CONFIG_TEMPLATE}" "${CONFIG_OUTPUT}" once
+cd "${SCRIPT_DIR}/scripts"
+python3 config_manager.py "${CONFIG_TEMPLATE}" "${CONFIG_OUTPUT}" once
 
 if [ $? -eq 0 ]; then
     echo ""
